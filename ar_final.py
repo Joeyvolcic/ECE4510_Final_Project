@@ -138,7 +138,8 @@ def __main__():
     save_points = 0
     show_distances = 0
     show_markers = 0
-    show_axes = 0
+    show_axes = 1
+    show_AR = 1
 
     #positions are stored as an array of 2 elements, the first being the x coordinate and the second being the y coordinate
     positions = []
@@ -156,7 +157,8 @@ def __main__():
     dist_coeffs = np.zeros((4,1)) 
 
     #this will be moda's inverse kinamatics point calculations, the position should be stored as an array of 5 elements with the last one being the angle of rotation
-    path = [0, 86, 50, 136, 120, 0], [0, 86, 50, 136, 120, 3], [0, 86, 50, 136, 120, 6], [0, 86, 50, 136, 120, 9], [0, 86, 50, 136, 120, 12], [0, 86, 50, 136, 120, 15], [0, 86, 50, 136, 120, 18], [0, 86, 50, 136, 120, 21], [0, 86, 50, 136, 120, 24], [0, 86, 50, 136, 120, 27], [0, 86, 50, 136, 120, 30], [0, 86, 50, 136, 120, 25], [0, 86, 50, 136, 120, 20], [0, 86, 50, 136, 120, 15], [0, 86, 50, 136, 120, 10], 
+    #[x,y,z,y,z,angle]
+    path = [0, 86, 50, 136, 120, 0], [0, 86, 50, 136, 120, 3], [0, 86, 50, 136, 120, 6], [0, 86, 50, 136, 120, 9], [0, 86, 50, 136, 120, 12], [0, 86, 50, 136, 120, 15], [0, 86, 50, 136, 120, 18], [0, 86, 50, 136, 120, 21], [0, 86, 50, 136, 120, 24], [0, 86, 50, 136, 120, 27], [0, 86, 50, 136, 120, 30], [0, 86, 50, 136, 120, 25], [0, 86, 50, 136, 120, 20], [0, 86, 50, 136, 120, 15], [0, 86, 50, 136, 120, 10]
 
     cap = cv2.VideoCapture(1)
 
@@ -194,21 +196,25 @@ def __main__():
                     try:
                         projection_matrix = compute_projection_matrix(camera_matrix, rvec, tvec)
                         h, w = squaresY * squareLength, squaresX * squareLength
-                        tvec_center = np.array([(tvec[0] + w/2), (tvec[1] + h/2), tvec[2]])
+
+                        #Draws the axes in the center of the board
+                        translation_board = np.array([w/2, h/2, 0])
+                        rotation_matrix, _ = cv2.Rodrigues(rvec)
+                        translation_camera = np.dot(rotation_matrix, translation_board).reshape(3, 1)
+                        tvec_center = (tvec + translation_camera)
 
                         if show_axes == 1:
-                            image = cv2.drawFrameAxes(image, cameraMatrix=camera_matrix, distCoeffs=dist_coeffs, rvec=rvec, tvec=tvec, length=100)
+                            image = cv2.drawFrameAxes(image, cameraMatrix=camera_matrix, distCoeffs=dist_coeffs, rvec=rvec, tvec=tvec_center, length=100)
                         
                         #creates an object for the current position of the arm
                         go.write_obj_file("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj", current_loc[0], current_loc[1], current_loc[2], current_loc[3], current_loc[4]) #really need to use relative paths
                         obj = OBJ("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj",swapyz=True)
                         
-                        image = new_render(image, obj, projection_matrix, scale_factor = 10, h = h, w = w, theta = np.radians(current_loc[5]), color= True)
-                        # print(current_loc[5])
-
-                    except:
+                        if show_AR == 1:
+                            image = new_render(image, obj, projection_matrix, scale_factor = 10, h = h, w = w, theta = np.radians(current_loc[5]), color= True)
+                    
+                    except: 
                         image = frame
-
 
             aruco_corners, aruco_ids, _ = aruco.detectMarkers(frame, cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_50))
             
@@ -224,8 +230,12 @@ def __main__():
                         if rvec is not None and tvec is not None:
                             try:
                                 h, w = squaresY * squareLength, squaresX * squareLength
-                                tvec_center = np.array([(tvec[0] + w/2), (tvec[1] + h/2), tvec[2]])
-                                charuco_point, _ = cv2.projectPoints(np.array([[0.0, 0.0, 0.0]]), rvec, tvec, camera_matrix, dist_coeffs)
+                                translation_board = np.array([w/2, h/2, 0])
+                                rotation_matrix, _ = cv2.Rodrigues(rvec)
+                                translation_camera = np.dot(rotation_matrix, translation_board).reshape(3, 1)
+                                tvec_center = (tvec + translation_camera)
+
+                                charuco_point, _ = cv2.projectPoints(np.array([[0.0, 0.0, 0.0]]), rvec, tvec_center, camera_matrix, dist_coeffs)
                                 aruco_point, _ = cv2.projectPoints(np.array([[0.0, 0.0, 0.0]]), aruco_rvec, aruco_tvec, camera_matrix, dist_coeffs)
 
                                 if show_distances == 1:
@@ -251,25 +261,29 @@ def __main__():
 
                             except:
                                 pass     
+
+        if cv2.waitKey(1) & 0xFF == ord('t'):
+            show_AR ^= 1
+            print("Toggled AR")
         
         if cv2.waitKey(1) & 0xFF == ord('r'):
             show_axes ^= 1
-            print("e pressed")
+            print("Toggled Axes")
 
         #shows distances if you click e
         if cv2.waitKey(1) & 0xFF == ord('e'):
             show_distances ^= 1
-            print("e pressed")
+            print("Toggled Distances")
 
         #shows markers if you click w
         if cv2.waitKey(1) & 0xFF == ord('w'):
             show_markers ^= 1
-            print("w pressed")
+            print("Toggled Markers")
 
         #saves the points if you click space
         if cv2.waitKey(1) & 0xFF == ord(' '):
             save_points = 1
-            print("space pressed")
+            print("Toggled Points")
 
         cv2.imshow('frame', image)
         #ends video feed if you click q
