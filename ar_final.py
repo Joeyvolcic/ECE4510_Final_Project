@@ -181,7 +181,7 @@ def __main__():
                     image = aruco.drawDetectedCornersCharuco(image, charuco_corners, charuco_ids)
 
                 # Estimate the pose of the Charuco board
-                if charuco_corners is not None and charuco_ids is not None and len(charuco_ids) >= 3:
+                if charuco_corners is not None and charuco_ids is not None and len(charuco_ids) >= 6:
                     _, rvec, tvec = aruco.estimatePoseCharucoBoard(charuco_corners, charuco_ids, board_main.board, camera_matrix, dist_coeffs, rvec, tvec)
 
                 # Gets the current position of the object and displays it over the board
@@ -196,14 +196,15 @@ def __main__():
                         h, w = squaresY * squareLength, squaresX * squareLength
                         tvec_center = np.array([(tvec[0] + w/2), (tvec[1] + h/2), tvec[2]])
 
-                        image = cv2.drawFrameAxes(image, cameraMatrix=camera_matrix, distCoeffs=dist_coeffs, rvec=rvec, tvec=tvec_center, length=100)
+                        if show_axes == 1:
+                            image = cv2.drawFrameAxes(image, cameraMatrix=camera_matrix, distCoeffs=dist_coeffs, rvec=rvec, tvec=tvec, length=100)
                         
                         #creates an object for the current position of the arm
                         go.write_obj_file("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj", current_loc[0], current_loc[1], current_loc[2], current_loc[3], current_loc[4]) #really need to use relative paths
                         obj = OBJ("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj",swapyz=True)
                         
-                        image = new_render(image, obj, projection_matrix, scale_factor = 2, h = h, w = w, theta = np.radians(current_loc[5]), color= True)
-                        print(current_loc[5])
+                        image = new_render(image, obj, projection_matrix, scale_factor = 10, h = h, w = w, theta = np.radians(current_loc[5]), color= True)
+                        # print(current_loc[5])
 
                     except:
                         image = frame
@@ -212,48 +213,76 @@ def __main__():
             aruco_corners, aruco_ids, _ = aruco.detectMarkers(frame, cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_50))
             
             if len(aruco_corners) > 0:
-                cv2.aruco.drawDetectedMarkers(image, aruco_corners, aruco_ids, (123, 51, 45))
+                if show_markers == 1:
+                    image = cv2.aruco.drawDetectedMarkers(image, aruco_corners, aruco_ids, (123, 51, 45))
 
                 for aruco_corner in aruco_corners:
                     aruco_rvec, aruco_tvec, _ = cv2.aruco.estimatePoseSingleMarkers(aruco_corner, 0.05, camera_matrix, dist_coeffs, aruco_rvec, aruco_tvec)
                     if aruco_rvec is not None and aruco_tvec is not None:
-                        if show_markers == 1:
+                        if show_axes == 1:
                             image = cv2.drawFrameAxes(image, cameraMatrix=camera_matrix, distCoeffs=dist_coeffs, rvec=aruco_rvec, tvec=aruco_tvec, length=0.01)
                         if rvec is not None and tvec is not None:
                             try:
                                 h, w = squaresY * squareLength, squaresX * squareLength
                                 tvec_center = np.array([(tvec[0] + w/2), (tvec[1] + h/2), tvec[2]])
-                                charuco_point, _ = cv2.projectPoints(np.array([[0.0, 0.0, 0.0]]), rvec, tvec_center, camera_matrix, dist_coeffs)
+                                charuco_point, _ = cv2.projectPoints(np.array([[0.0, 0.0, 0.0]]), rvec, tvec, camera_matrix, dist_coeffs)
                                 aruco_point, _ = cv2.projectPoints(np.array([[0.0, 0.0, 0.0]]), aruco_rvec, aruco_tvec, camera_matrix, dist_coeffs)
 
-                                image = cv2.line(image, tuple(charuco_point.ravel().astype(int)), tuple(aruco_point.ravel().astype(int)), (34, 0, 34), 2)
+                                if show_distances == 1:
+                                    image = cv2.line(image, tuple(charuco_point.ravel().astype(int)), tuple(aruco_point.ravel().astype(int)), (34, 0, 34), 2)
 
                                 # Convert the points to integer format
                                 charuco_point = tuple(charuco_point.ravel().astype(int))
                                 aruco_point = tuple(aruco_point.ravel().astype(int))
-                                if save_points == 1:
-                                    if positions.__len__() > 2:
+                                if save_points > 0 and save_points <= 2:
+                                    if positions.__len__() >= 2:
                                         positions = []
+
                                     pointx = aruco_point[0] - charuco_point[0]
                                     pointy = aruco_point[1] - charuco_point[1]
                                     positions.append([pointx, pointy])
                                     print("coordinatesx: ", pointx)
                                     print("coordinatesy: ", pointy)    
+                                    save_points = save_points + 1
+                                elif save_points > 2:
                                     save_points = 0
+
+
 
                             except:
                                 pass     
         
-        cv2.imshow('frame', image)
+        if cv2.waitKey(1) & 0xFF == ord('r'):
+            show_axes ^= 1
+            print("e pressed")
 
+        #shows distances if you click e
+        if cv2.waitKey(1) & 0xFF == ord('e'):
+            show_distances ^= 1
+            print("e pressed")
+
+        #shows markers if you click w
         if cv2.waitKey(1) & 0xFF == ord('w'):
-            save_points = 1
+            show_markers ^= 1
+            print("w pressed")
 
+        #saves the points if you click space
         if cv2.waitKey(1) & 0xFF == ord(' '):
             save_points = 1
+            print("space pressed")
 
+        cv2.imshow('frame', image)
+        #ends video feed if you click q
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+
     cap.release()
     cv2.destroyAllWindows()
+
+__main__()
+
+# if position[0][0] < 0 and position[0][1] < 0:
+#     math.tan(position[0][0]/position[0][1]) + 180
+# else 
+#     math.tan(position[0][0]/position[0][1])
