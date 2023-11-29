@@ -59,38 +59,38 @@ class OBJ:
 
 # Create an instance of the OBJ class with the path to your OBJ file
 
-# go.write_obj_file("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj", 0, 86, 50, 100, 99)
-# # go.generate_base_obj("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\base.obj", 0, 86, 50, 0, 186, 50)
-# obj = OBJ("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj", swapyz=True)
+go.write_obj_file("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj", 0, 86, 50, 100, 99)
+go.generate_base_obj("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\base.obj", 0, 86, 50, 0, 186, 50)
+obj = OBJ("C:\\Users\\JoeyV\\OneDrive\\4510\\Projects\\augmented-reality-master (1)\\augmented-reality-master\\models\\arm.obj", swapyz=True)
 
 # This allows us to see a 3d plot of the model
 # Set up a 3D plot
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
-# # Draw lines based on vertex positions
-# for face in obj.faces:
-#     vertices = obj.vertices
-#     x = [vertices[i - 1][0] for i in face[0]]
-#     y = [vertices[i - 1][1] for i in face[0]]
-#     z = [vertices[i - 1][2] for i in face[0]]
+# Draw lines based on vertex positions
+for face in obj.faces:
+    vertices = obj.vertices
+    x = [vertices[i - 1][0] for i in face[0]]
+    y = [vertices[i - 1][1] for i in face[0]]
+    z = [vertices[i - 1][2] for i in face[0]]
 
-#     # Connect the last point to the first to close the loop
-#     x.append(x[0])
-#     y.append(y[0])
-#     z.append(z[0])
+    # Connect the last point to the first to close the loop
+    x.append(x[0])
+    y.append(y[0])
+    z.append(z[0])
 
-#     # Plot the line
-#     ax.plot(x, y, z, c='black')
+    # Plot the line
+    ax.plot(x, y, z, c='black')
 
-# # Print some debugging information
-# print("Vertices:", obj.vertices)
-# print("Faces:", obj.faces)
+# Print some debugging information
+print("Vertices:", obj.vertices)
+print("Faces:", obj.faces)
 
-# # Set plot limits
-# ax.set_xlim([-100, 100])  # Adjust the limits based on your object dimensions
-# ax.set_ylim([-100, 100])
-# ax.set_zlim([-100, 100])
+# Set plot limits
+ax.set_xlim([-100, 100])  # Adjust the limits based on your object dimensions
+ax.set_ylim([-100, 100])
+ax.set_zlim([-100, 100])
 
-# # Show the 3D plot
-# plt.show()
+# Show the 3D plot
+plt.show()
