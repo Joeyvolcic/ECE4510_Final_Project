@@ -2,6 +2,9 @@ import math
 #This is where we will generate the new obj file position
 
 def write_obj_file(filename, joint1x: int, joint1y: int, joint1z, joint2y: int, joint2z: int):
+    """
+    Generates the obj file for the robot arm
+    """
     #scale factor
     offset : int = 10 #we might want to pass this as an argument into the function
     joint_length : int = math.sqrt((joint1x - joint1x)**2 + (joint2y - joint1y)**2 + (joint2z - joint1z)**2)
@@ -21,8 +24,6 @@ def write_obj_file(filename, joint1x: int, joint1y: int, joint1z, joint2y: int, 
     arm2_Zoff = offset * math.cos(arm2_angle)
     
 
-
-    
     with open(filename, 'w') as obj_file:
         obj_file.write("# OBJ file\n")
 
@@ -30,10 +31,10 @@ def write_obj_file(filename, joint1x: int, joint1y: int, joint1z, joint2y: int, 
         obj_file.write("#First Segment\n")
         obj_file.write("#the first segment can only move in the y direction\n")
         obj_file.write("#coordinate format x y z\n")
-        obj_file.write("v {} {} {}\n".format(0, offset * math.sin(arm1_angle), arm1_Zoff))
+        obj_file.write("v {} {} {}\n".format(0, arm1_Yoff, arm1_Zoff))
         obj_file.write("v {} {} {}\n".format(0, 0, offset))
         obj_file.write("v {} {} {}\n".format(joint1x, joint1y, joint1z + offset))
-        obj_file.write("v {} {} {}\n".format(joint1x, joint1y + offset * math.sin(arm1_angle), joint1z + arm1_Zoff))
+        obj_file.write("v {} {} {}\n".format(joint1x, joint1y + arm1_Yoff, joint1z + arm1_Zoff))
 
         #The end of the joins should alway create a 10 by 10 square its should also always be at a 90 degree angle
 
@@ -55,13 +56,14 @@ def write_obj_file(filename, joint1x: int, joint1y: int, joint1z, joint2y: int, 
         obj_file.write("#Second Segment\n")
         obj_file.write("v {} {} {}\n".format(joint1x, joint1y + arm1_Yoff, joint1z + arm1_Zoff))
         obj_file.write("v {} {} {}\n".format(joint1x, joint1y - arm2_Yoff + arm1_Yoff, joint1z + arm1_Zoff + arm2_Zoff))   
-        obj_file.write("v {} {} {}\n".format(joint1x, joint2y + offset - arm2_Yoff + arm1_Yoff, joint2z + offset + arm1_Zoff + arm2_Zoff))
+        obj_file.write("v {} {} {}\n".format(joint1x, joint2y + arm1_Yoff, joint2z + arm1_Zoff ))
         obj_file.write("v {} {} {}\n".format(joint1x, joint2y - arm2_Yoff + arm1_Yoff, joint2z+ arm1_Zoff + arm2_Zoff))
 
         obj_file.write("\n")
         obj_file.write("v {} {} {}\n".format(joint1x + offset, joint1y + arm1_Yoff, joint1z + arm1_Zoff))
         obj_file.write("v {} {} {}\n".format(joint1x + offset, joint1y - arm2_Yoff + arm1_Yoff, joint1z + arm1_Zoff + arm2_Zoff))
-        obj_file.write("v {} {} {}\n".format(joint1x + offset, joint2y + offset - arm2_Yoff + arm1_Yoff, joint2z + offset + arm1_Zoff + arm2_Zoff))
+        
+        obj_file.write("v {} {} {}\n".format(joint1x + offset, joint2y + arm1_Yoff, joint2z + arm1_Zoff ))
         obj_file.write("v {} {} {}\n".format(joint1x + offset, joint2y - arm2_Yoff + arm1_Yoff, joint2z+ arm1_Zoff + arm2_Zoff))
 
 
@@ -106,13 +108,13 @@ def write_obj_file(filename, joint1x: int, joint1y: int, joint1z, joint2y: int, 
         obj_file.write("\n")
         obj_file.write("#Faces\n")
 
-        obj_file.write("#Base\n")
-        obj_file.write("f 17 18 19 20 #212121\n")
-        obj_file.write("f 21 22 23 24 #212121\n")
-        obj_file.write("f 17 18 22 21 #212121\n")
-        obj_file.write("f 18 19 23 22 #212121\n")
-        obj_file.write("f 19 20 24 23 #212121\n")
-        obj_file.write("f 20 17 21 24 #212121\n")
+        # obj_file.write("#Base\n")
+        # obj_file.write("f 17 18 19 20 #212121\n")
+        # obj_file.write("f 21 22 23 24 #212121\n")
+        # obj_file.write("f 17 18 22 21 #212121\n")
+        # obj_file.write("f 18 19 23 22 #212121\n")
+        # obj_file.write("f 19 20 24 23 #212121\n")
+        # obj_file.write("f 20 17 21 24 #212121\n")
      
         obj_file.write("#Arm 1\n")
         obj_file.write("f 1 2 3 4 #f25c19\n")
@@ -122,16 +124,17 @@ def write_obj_file(filename, joint1x: int, joint1y: int, joint1z, joint2y: int, 
         obj_file.write("f 3 4 8 7 #f25c19\n")
 
         obj_file.write("#Arm 2\n")
-        obj_file.write("f 9 10 11 12 #f25c19\n")
-        obj_file.write("f 13 14 15 16 #f25c19\n")
-        obj_file.write("f 9 10 14 13 #f25c19\n")
-        obj_file.write("f 10 11 15 14 #f25c19\n")
-        obj_file.write("f 11 12 16 15 #f25c19\n")
+        obj_file.write("f 9 10 12 11 #f25c19\n")
+        obj_file.write("f 13 14 16 15 #f25c19\n")
+        obj_file.write("f 9 11 15 13 #f25c19\n")
+        obj_file.write("f 10 12 16 14 #f25c19\n")
+
+
 
 
 
         # obj_file.write("f 9 10 11 12 #212121\n")
-        # obj_file.write("f 13 14 15 16 #212121\n")
+        
         # obj_file.write("f 9 10 14 13 #212121\n")
         # obj_file.write("f 10 11 15 14 #212121\n")
         # obj_file.write("f 11 12 16 15 #212121\n")
@@ -148,6 +151,9 @@ def write_obj_file(filename, joint1x: int, joint1y: int, joint1z, joint2y: int, 
 
 
 def generate_base_obj(filename, joint1x: int, joint1y: int, joint1z: int, joint2x: int, joint2y: int, joint2z: int):
+    """
+    Generates the base of the robot arm based on the length of the links
+    """
     joint_length : int = math.sqrt((joint2x - joint1x)**2 + (joint2y - joint1y)**2 + (joint2z - joint1z)**2)
     with open(filename, 'w') as obj_file:
 
@@ -163,18 +169,6 @@ def generate_base_obj(filename, joint1x: int, joint1y: int, joint1z: int, joint2
         obj_file.write("v {} {} {}\n".format(0 + (joint_length / 4), 0, 0 + (joint_length / 4)))
         obj_file.write("v {} {} {}\n".format(0 - (joint_length / 4), 0, 0 + (joint_length / 4)))
 
-        obj_file.write("#Joint Buldge\n")
-        obj_file.write("v {} {} {}\n".format(joint1x - (joint_length / 10), joint1y + (joint_length / 10), joint1z - (joint_length / 10)))
-        obj_file.write("v {} {} {}\n".format(joint1x + (joint_length / 10), joint1y + (joint_length / 10), joint1z - (joint_length / 10)))
-        obj_file.write("v {} {} {}\n".format(joint1x + (joint_length / 10), joint1y + (joint_length / 10), joint1z + (joint_length / 10)))
-        obj_file.write("v {} {} {}\n".format(joint1x- (joint_length / 10), joint1y + (joint_length / 10), joint1z + (joint_length / 10)))
-
-        obj_file.write("#Joint Buldge top\n")
-        obj_file.write("v {} {} {}\n".format(joint1x - (joint_length / 10), joint1y + (joint_length / 10) + (joint_length / 5), joint1z - (joint_length / 10)))
-        obj_file.write("v {} {} {}\n".format(joint1x + (joint_length / 10), joint1y + (joint_length / 10) + (joint_length / 5), joint1z - (joint_length / 10)))
-        obj_file.write("v {} {} {}\n".format(joint1x + (joint_length / 10), joint1y + (joint_length / 10) + (joint_length / 5), joint1z + (joint_length / 10)))
-        obj_file.write("v {} {} {}\n".format(joint1x- (joint_length / 10), joint1y + (joint_length / 10) + (joint_length / 5), joint1z + (joint_length / 10)))
-
         obj_file.write("\n")
         obj_file.write("#Faces\n")
         obj_file.write("f 1 2 3 4 #123123\n")
@@ -183,12 +177,7 @@ def generate_base_obj(filename, joint1x: int, joint1y: int, joint1z: int, joint2
         obj_file.write("f 2 3 7 6 #212121\n")
         obj_file.write("f 3 4 8 7 #212121\n")
         obj_file.write("f 4 1 5 8 #212121\n")
-        obj_file.write("f 9 10 11 12 #faedd2\n")
-        obj_file.write("f 13 14 15 16 #faedd2\n")
-        obj_file.write("f 9 10 14 13 #faedd2\n")
-        obj_file.write("f 10 11 15 14 #faedd2\n")
-        obj_file.write("f 11 12 16 15 #faedd2\n")
-        obj_file.write("f 12 9 13 16 #faedd2\n")
+  
         
 
 
