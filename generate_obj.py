@@ -185,4 +185,3 @@ def generate_base_obj(filename, joint1x: int, joint1y: int, joint1z: int, joint2
 
     
 
-
